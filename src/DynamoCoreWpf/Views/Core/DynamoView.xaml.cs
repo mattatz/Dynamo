@@ -50,6 +50,7 @@ using HelixToolkit.Wpf.SharpDX;
 using ResourceNames = Dynamo.Wpf.Interfaces.ResourceNames;
 using Res = Dynamo.Wpf.Properties.Resources;
 using String = System.String;
+using System.Reflection;
 
 namespace Dynamo.Controls
 {
@@ -205,7 +206,7 @@ namespace Dynamo.Controls
              };
 
             // Add an event handler to check if the collection is modified.   
-            ExtensionTabItems.CollectionChanged += this.OnCollectionChanged;
+            ExtensionTabItems.CollectionChanged += this.OnCollectionChanged;            
 
             this.HideOrShowRightSideBar();
 

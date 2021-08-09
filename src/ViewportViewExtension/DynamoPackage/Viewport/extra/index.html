@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <body>
+        <head>
+            <meta charset="utf-8">
+            <link rel="stylesheet" href="styles.css">
+            <div id="gui-container"></div>
+        </head>
+
+        <script src="assests/js/three.min.js"></script>
+        <script src="assests/js/OrbitControls.js"></script>
+        <script src="assests/js/viewer.js"></script>
+        <script src="assests/js/dat.gui.js" type="text/javascript"></script>
+
+        <script>
+            // VIEWER //
+            let camera, perspectiveCamera, orthoCamera;
+            let scene, renderer, controls;
+
+            // GUI //
+            let menu;
+            let rotation = false;
+
+            // MATERIALS //
+            let material, wireframeMaterial;
+            let materialVisibility = true;
+            let wireframeMaterialVisibility = true;
+
+            // MOUSE //
+            let mouse = new THREE.Vector2()
+
+            // RENDER //
+            init();
+            render();
+        </script>
+    </body>
+</html>

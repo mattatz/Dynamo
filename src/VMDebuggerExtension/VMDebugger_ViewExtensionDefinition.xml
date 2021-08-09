@@ -1,0 +1,4 @@
+﻿<ViewExtensionDefinition>
+  <AssemblyPath>..\VMDebuggerViewExtension.dll</AssemblyPath>
+  <TypeName>VMDebuggerViewExtension.VMDebuggerViewExtension</TypeName>
+</ViewExtensionDefinition>

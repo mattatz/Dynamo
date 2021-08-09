@@ -20,7 +20,16 @@ namespace Dynamo.Wpf.Extensions
                     {
                         CertificateVerification.CheckAssemblyForValidCertificate(viewExtension.AssemblyPath);
                     }
-                    var assembly = Assembly.LoadFrom(viewExtension.AssemblyPath);
+
+                    Assembly assembly = null;
+                    if (viewExtension.AssemblyPath.Contains("ViewportViewExtension"))
+                    {
+                        assembly = Assembly.Load("ViewportViewExtension");
+                    } else
+                    {
+                        assembly = Assembly.LoadFrom(viewExtension.AssemblyPath);
+                    }
+                     
                     var result = assembly.CreateInstance(viewExtension.TypeName) as IViewExtension;
                     ExtensionLoading?.Invoke(result);
 
