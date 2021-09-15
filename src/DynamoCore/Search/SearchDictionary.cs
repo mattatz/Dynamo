@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using Dynamo.Configuration;
 
 namespace Dynamo.Search
 {
@@ -263,24 +264,31 @@ namespace Dynamo.Search
         /// <returns></returns>
         private static bool MatchWithQueryString(string key, string[] subPatterns)
         {
-            int numberOfMatchSymbols = 0;
-            int numberOfAllSymbols = 0;
-            //for each word
-            foreach (var subPattern in subPatterns)
-            { //for each continuous substring in the word starting with the full word
-                for (int i = subPattern.Length; i >= 1; i--)
-                {
-                    var part = subPattern.Substring(0, i);
-                    if (key.IndexOf(part) != -1)
-                    {   //if we find a match record the amount of the match and goto the next word
-                        numberOfMatchSymbols += part.Length;
-                        break;
-                    }
-                }
-                numberOfAllSymbols += subPattern.Length;
+            if (DebugModes.IsEnabled("Disable14"))
+            {
+                return false;
             }
-            //ratio of all symbols to matched partial words >.8 for match
-            return (double)numberOfMatchSymbols / numberOfAllSymbols > 0.8;
+            else
+            {
+                int numberOfMatchSymbols = 0;
+                int numberOfAllSymbols = 0;
+                //for each word
+                foreach (var subPattern in subPatterns)
+                { //for each continuous substring in the word starting with the full word
+                    for (int i = subPattern.Length; i >= 1; i--)
+                    {
+                        var part = subPattern.Substring(0, i);
+                        if (key.IndexOf(part) != -1)
+                        {   //if we find a match record the amount of the match and goto the next word
+                            numberOfMatchSymbols += part.Length;
+                            break;
+                        }
+                    }
+                    numberOfAllSymbols += subPattern.Length;
+                }
+                //ratio of all symbols to matched partial words >.8 for match
+                return (double)numberOfMatchSymbols / numberOfAllSymbols > 0.8;
+            }
         }
 
         private static string[] SplitOnWhiteSpace(string s)
@@ -337,15 +345,30 @@ namespace Dynamo.Search
 
             var searchDict = new Dictionary<V, double>();
 
-            if (tagDictionary == null)
+            if (DebugModes.IsEnabled("Disable11"))
             {
-                RebuildTagDictionary();
+                tagDictionary = new List<IGrouping<string, Tuple<V, double>>>();
+            }
+            else
+            {
+                if (tagDictionary == null)
+                {
+                    RebuildTagDictionary();
+                }
             }
 
             query = query.ToLower();
 
-            var subPatterns = SplitOnWhiteSpace(query);
-
+            string[] subPatterns = null;
+            if (DebugModes.IsEnabled("Disable12"))
+            {
+                subPatterns = new List<string>() { "example" }.ToArray();
+            }
+            else
+            {
+                subPatterns = SplitOnWhiteSpace(query);
+            }
+  
             // Add full (unsplit by whitespace) query to subpatterns
             var subPatternsList = subPatterns.ToList();
             subPatternsList.Insert(0, query);
@@ -362,7 +385,14 @@ namespace Dynamo.Search
 
             // return only the top 20 search results
             searchResults = searchResults.Take(20);
-            
+
+            this.logger.Log(string.Format(
+                "Searching for: \"{0}\", [Entries:{1}, Tags:{2}] : SearchResults {3}",
+                    query,
+                    entryDictionary.Count,
+                    tagDictionary.Count,
+                    searchResults.Count()));
+
 #if DEBUG
             if (this.logger != null)
             {
@@ -388,24 +418,31 @@ namespace Dynamo.Search
             IGrouping<string, Tuple<V, double>> pair, 
             Dictionary<V, double> searchDict)
         {
-            // it has a match, how close is it to matching the entire string?
-            double matchCloseness = ((double)query.Length) / pair.Key.Length;
-
-            foreach (var eleAndWeight in pair)
+            if (DebugModes.IsEnabled("Disable13"))
             {
-                var ele = eleAndWeight.Item1;
-                double weight = matchCloseness * eleAndWeight.Item2;
+                return;
+            }
+            else
+            {
+                // it has a match, how close is it to matching the entire string?
+                double matchCloseness = ((double)query.Length) / pair.Key.Length;
 
-                // we may have seen V before
-                if (searchDict.ContainsKey(ele))
+                foreach (var eleAndWeight in pair)
                 {
-                    // if we have, update its weight if better than the current one
-                    if (searchDict[ele] < weight) searchDict[ele] = weight;
-                }
-                else
-                {
-                    // if we haven't seen it, add it to the dictionary for this search
-                    searchDict.Add(ele, weight);
+                    var ele = eleAndWeight.Item1;
+                    double weight = matchCloseness * eleAndWeight.Item2;
+
+                    // we may have seen V before
+                    if (searchDict.ContainsKey(ele))
+                    {
+                        // if we have, update its weight if better than the current one
+                        if (searchDict[ele] < weight) searchDict[ele] = weight;
+                    }
+                    else
+                    {
+                        // if we haven't seen it, add it to the dictionary for this search
+                        searchDict.Add(ele, weight);
+                    }
                 }
             }
         }

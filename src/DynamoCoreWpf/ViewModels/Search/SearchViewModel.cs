@@ -385,7 +385,7 @@ namespace Dynamo.ViewModels
                     (name, subs, es) =>
                     {
                         var category =
-                            new NodeCategoryViewModel(name, es.OrderBy(en => en.Name).Select(MakeNodeSearchElementVM), subs);
+                            new NodeCategoryViewModel(name, es.OrderBy(en => en.Name).Select(MakeNodeSearchElementVM).Where(x => x != null), subs);
                         category.IsExpanded = expanded;
                         category.RequestBitmapSource += SearchViewModelRequestBitmapSource;
                         category.RequestReturnFocusToSearch += OnRequestFocusSearch;
@@ -594,6 +594,10 @@ namespace Dynamo.ViewModels
         /// </param>
         internal void InsertEntry(NodeSearchElementViewModel entry, IEnumerable<string> categoryNames)
         {
+            if (entry == null)
+            {
+                return;
+            }
             var nameStack = new Stack<string>(categoryNames.Reverse());
             var target = libraryRoot;
             string fullyQualifiedCategoryName = "";
@@ -857,19 +861,30 @@ namespace Dynamo.ViewModels
             if (string.IsNullOrEmpty(query))
                 return;
 
-            var foundNodes = Search(query);
-            searchResults = new List<NodeSearchElementViewModel>(foundNodes);
-
-            FilteredResults = searchResults;
-
-            if (DebugModes.IsEnabled("Disable3"))
+            if (DebugModes.IsEnabled("Disable15"))
             {
-                if (Model.logger != null)
-                    Model.logger.Log("Disabled calls to UpdateSearchCategories");
+                filteredResults = new List<NodeSearchElementViewModel>() {
+                                MakeNodeSearchElementVM(dynamoViewModel.Model.SearchModel.SearchEntries.ElementAt(0)),
+                                MakeNodeSearchElementVM(dynamoViewModel.Model.SearchModel.SearchEntries.ElementAt(1))
+                };
             }
             else
             {
-                UpdateSearchCategories();
+                var foundNodes = Search(query);
+                searchResults = new List<NodeSearchElementViewModel>(foundNodes);
+
+                FilteredResults = searchResults;
+
+                if (DebugModes.IsEnabled("Disable3"))
+                {
+                    if (Model.logger != null)
+                        Model.logger.Log("Disabled calls to UpdateSearchCategories");
+                }
+                else
+                {
+                    UpdateSearchCategories();
+                }
+
             }
 
             RaisePropertyChanged("FilteredResults");
@@ -915,7 +930,7 @@ namespace Dynamo.ViewModels
         internal IEnumerable<NodeSearchElementViewModel> Search(string search)
         {
             var foundNodes = Model.Search(search);
-            return foundNodes.Select(MakeNodeSearchElementVM);
+            return foundNodes.Select(MakeNodeSearchElementVM).Where(x => x != null);
         }
 
         private static IEnumerable<NodeSearchElementViewModel> GetVisibleSearchResults(NodeCategoryViewModel category)
@@ -935,13 +950,20 @@ namespace Dynamo.ViewModels
 
         private NodeSearchElementViewModel MakeNodeSearchElementVM(NodeSearchElement entry)
         {
-            var element = entry as CustomNodeSearchElement;
-            var elementVM = element != null
-                ? new CustomNodeSearchElementViewModel(element, this)
-                : new NodeSearchElementViewModel(entry, this);
+            if (DebugModes.IsEnabled("Disable8"))
+            {
+                return null;
+            }
+            else
+            {
+                var element = entry as CustomNodeSearchElement;
+                var elementVM = element != null
+                    ? new CustomNodeSearchElementViewModel(element, this)
+                    : new NodeSearchElementViewModel(entry, this);
 
-            elementVM.RequestBitmapSource += SearchViewModelRequestBitmapSource;
-            return elementVM;
+                elementVM.RequestBitmapSource += SearchViewModelRequestBitmapSource;
+                return elementVM;
+            }
         }
 
         private static NodeCategoryViewModel GetCategoryViewModel(NodeCategoryViewModel rootCategory,

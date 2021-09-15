@@ -54,6 +54,14 @@ namespace Dynamo.Configuration
             AddDebugMode("Disable5", "Disables LoadIconInternal - Disable loading the icons from the resource assembly", false);
             AddDebugMode("Disable6", "Disables ConvertToImageSource - Disable conversion from bitmap to imagesource", false);
             AddDebugMode("Disable7", "Disables WPF listbox - No search results should be rendered in wpf", false);
+            AddDebugMode("Disable8", "Disables MakeNodeSearchElementVM", false);
+            AddDebugMode("Disable9", "Disables LoadFonts", false);
+            AddDebugMode("Disable10", "Disables NodeSearchElementViewModel events", false);
+            AddDebugMode("Disable11", "Disables RebuildTagDictionary", false);
+            AddDebugMode("Disable12", "Disables SplitOnWhiteSpace", false);
+            AddDebugMode("Disable13", "Disables ComputeWeightAndAddToDictionary", false);
+            AddDebugMode("Disable14", "Disables MatchWithQueryString", false);
+            AddDebugMode("Disable15", "Hardcodes search results to the first 2 nodes in the library", false);
         }
 
         internal static void LoadDebugModesStatusFromConfig(string configPath)

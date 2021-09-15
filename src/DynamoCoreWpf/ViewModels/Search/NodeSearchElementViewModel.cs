@@ -41,12 +41,26 @@ namespace Dynamo.Wpf.ViewModels
             Model = element;
             searchViewModel = svm;
 
-            Model.VisibilityChanged += ModelOnVisibilityChanged;
-            if (searchViewModel != null)
-                Clicked += searchViewModel.OnSearchElementClicked;
-            ClickedCommand = new DelegateCommand(OnClicked);
+            if (DebugModes.IsEnabled("Disable10"))
+            {
+                // nothing
+            }
+            else
+            {
+                Model.VisibilityChanged += ModelOnVisibilityChanged;
+                if (searchViewModel != null)
+                    Clicked += searchViewModel.OnSearchElementClicked;
+                ClickedCommand = new DelegateCommand(OnClicked);
+            }
 
-            LoadFonts();
+            if (DebugModes.IsEnabled("Disable9"))
+            {
+                // nothing
+            }
+            else
+            {
+                LoadFonts();
+            }
         }
 
         private void ModelOnVisibilityChanged()
