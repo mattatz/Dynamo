@@ -85,7 +85,7 @@ namespace Dynamo.UI.Controls
             if (searchElement != null)
             {
                 searchElement.Position = ViewModel.InCanvasSearchPosition;
-                searchElement.ClickedCommand.Execute(null);
+                searchElement.ClickedCommand?.Execute(null);
             }
         }
 

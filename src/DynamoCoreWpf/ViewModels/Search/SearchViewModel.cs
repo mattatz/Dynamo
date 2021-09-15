@@ -864,8 +864,7 @@ namespace Dynamo.ViewModels
             if (DebugModes.IsEnabled("Disable15"))
             {
                 filteredResults = new List<NodeSearchElementViewModel>() {
-                                MakeNodeSearchElementVM(dynamoViewModel.Model.SearchModel.SearchEntries.ElementAt(0)),
-                                MakeNodeSearchElementVM(dynamoViewModel.Model.SearchModel.SearchEntries.ElementAt(1))
+                    MakeNodeSearchElementVM(dynamoViewModel.Model.SearchModel.SearchEntries.FirstOrDefault())
                 };
             }
             else

@@ -61,7 +61,7 @@ namespace Dynamo.Configuration
             AddDebugMode("Disable12", "Disables SplitOnWhiteSpace", false);
             AddDebugMode("Disable13", "Disables ComputeWeightAndAddToDictionary", false);
             AddDebugMode("Disable14", "Disables MatchWithQueryString", false);
-            AddDebugMode("Disable15", "Hardcodes search results to the first 2 nodes in the library", false);
+            AddDebugMode("Disable15", "Hardcodes search results to the first node in the library", false);
         }
 
         internal static void LoadDebugModesStatusFromConfig(string configPath)
