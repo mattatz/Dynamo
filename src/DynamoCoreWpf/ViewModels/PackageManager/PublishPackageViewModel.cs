@@ -17,7 +17,6 @@ using Dynamo.ViewModels;
 using Dynamo.Wpf.Properties;
 using Greg.Requests;
 using Microsoft.Practices.Prism.Commands;
-using PythonNodeModels;
 using Double = System.Double;
 using NotificationObject = Microsoft.Practices.Prism.ViewModel.NotificationObject;
 using String = System.String;
@@ -140,7 +139,7 @@ namespace Dynamo.PackageManager
                 }
             }
         }
-        
+
         /// <summary>
         /// CanEditName property </summary>
         /// <value>
@@ -153,7 +152,7 @@ namespace Dynamo.PackageManager
         /// <summary>
         /// UploadState property </summary>
         /// <value>
-        /// The state of the current upload 
+        /// The state of the current upload
         /// </value>
         private PackageUploadHandle.State _uploadState = PackageUploadHandle.State.Ready;
         public PackageUploadHandle.State UploadState
@@ -452,7 +451,7 @@ namespace Dynamo.PackageManager
                 {
                     selectedHosts = value;
                     // The following logic is mainly for publishing from an existing package with
-                    // pre-serialized host dependencies. We set the selection state so user do not have 
+                    // pre-serialized host dependencies. We set the selection state so user do not have
                     // to replicate the selection again
                     foreach (var host in KnownHosts)
                     {
@@ -534,7 +533,7 @@ namespace Dynamo.PackageManager
         public Package Package { get; set; }
 
         /// <summary>
-        /// PackageContents property 
+        /// PackageContents property
         /// </summary>
         private List<PackageItemRootViewModel> _packageContents = null;
         public IEnumerable<PackageItemRootViewModel> PackageContents
@@ -551,7 +550,7 @@ namespace Dynamo.PackageManager
         }
 
         /// <summary>
-        /// CustomNodeDefinitions property 
+        /// CustomNodeDefinitions property
         /// </summary>
         private List<CustomNodeDefinition> customNodeDefinitions;
         public List<CustomNodeDefinition> CustomNodeDefinitions
@@ -565,7 +564,7 @@ namespace Dynamo.PackageManager
                 {
                     Name = CustomNodeDefinitions[0].DisplayName;
                 }
-                
+
                 UpdateDependencies();
             }
         }
@@ -573,7 +572,7 @@ namespace Dynamo.PackageManager
         public List<PackageAssembly> Assemblies { get; set; }
 
         /// <summary>
-        /// AdditionalFiles property 
+        /// AdditionalFiles property
         /// </summary>
         private ObservableCollection<string> _additionalFiles = new ObservableCollection<string>();
         public ObservableCollection<string> AdditionalFiles
@@ -600,7 +599,7 @@ namespace Dynamo.PackageManager
         /// <value>
         /// The PackageHeader if we're uploading a new verson, setting this updates
         /// almost all of the fields in this object</value>
-        /// 
+        ///
         private PackageUploadRequestBody _dynamoBaseHeader;
         public PackageUploadRequestBody BaseVersionHeader
         {
@@ -737,7 +736,8 @@ namespace Dynamo.PackageManager
                 SiteUrl = l.SiteUrl ?? "",
                 Package = l,
                 License = l.License,
-                SelectedHosts = l.HostDependencies as List<string>
+                SelectedHosts = l.HostDependencies as List<string>,
+                Dependencies = l.Dependencies
             };
 
             // add additional files
@@ -840,49 +840,24 @@ namespace Dynamo.PackageManager
             return AllDependentFuncDefs().Union(CustomNodeDefinitions).Distinct();
         }
 
-        private enum GetFunctionDefinition
-        {
-            AllDependentFuncDefs,
-            AllFuncDefs
-        }
-        private List<CustomNodeWorkspaceModel> GetFunctionDefinitionWS(GetFunctionDefinition gfd)
-        {
-            var workspaces = new List<CustomNodeWorkspaceModel>();
-            if (gfd == GetFunctionDefinition.AllDependentFuncDefs)
-            {
-                foreach (var def in AllDependentFuncDefs())
-                {
-                    CustomNodeWorkspaceModel ws;
-                    if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
-                        def.FunctionId,
-                        DynamoModel.IsTestMode,
-                        out ws))
-                    {
-                        workspaces.Add(ws);
-                    }
-                }
-            }
-            else if (gfd == GetFunctionDefinition.AllFuncDefs)
-            {
-                foreach (var def in AllFuncDefs())
-                {
-                    CustomNodeWorkspaceModel ws;
-                    if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
-                        def.FunctionId,
-                        DynamoModel.IsTestMode,
-                        out ws))
-                    {
-                        workspaces.Add(ws);
-                    }
-                }
-            }
-            return workspaces;
-        }
-
         private IEnumerable<string> GetAllUnqualifiedFiles()
         {
+            // get all function defs
+            var allFuncs = AllFuncDefs();
+
             // all workspaces
-            var workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllFuncDefs);
+            var workspaces = new List<CustomNodeWorkspaceModel>();
+            foreach (var def in allFuncs)
+            {
+                CustomNodeWorkspaceModel ws;
+                if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
+                    def.FunctionId,
+                    DynamoModel.IsTestMode,
+                    out ws))
+                {
+                    workspaces.Add(ws);
+                }
+            }
 
             var pmExtension = dynamoViewModel.Model.GetPackageManagerExtension();
 
@@ -902,8 +877,22 @@ namespace Dynamo.PackageManager
 
         internal IEnumerable<string> GetAllFiles()
         {
+            // get all function defs
+            var allFuncs = AllFuncDefs().ToList();
+
             // all workspaces
-            var workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllFuncDefs);
+            var workspaces = new List<CustomNodeWorkspaceModel>();
+            foreach (var def in allFuncs)
+            {
+                CustomNodeWorkspaceModel ws;
+                if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
+                    def.FunctionId,
+                    DynamoModel.IsTestMode,
+                    out ws))
+                {
+                    workspaces.Add(ws);
+                }
+            }
 
             // make sure workspaces are saved
             var unsavedWorkspaceNames =
@@ -934,7 +923,7 @@ namespace Dynamo.PackageManager
 
         private void UpdateDependencies()
         {
-            Dependencies.Clear();
+            // Dependencies.Clear();
             GetAllDependencies().ToList().ForEach(Dependencies.Add);
         }
 
@@ -944,7 +933,18 @@ namespace Dynamo.PackageManager
             var pkgLoader = pmExtension.PackageLoader;
 
             // all workspaces
-            var workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllDependentFuncDefs);
+            var workspaces = new List<CustomNodeWorkspaceModel>();
+            foreach (var def in AllDependentFuncDefs())
+            {
+                CustomNodeWorkspaceModel ws;
+                if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
+                    def.FunctionId,
+                    DynamoModel.IsTestMode,
+                    out ws))
+                {
+                    workspaces.Add(ws);
+                }
+            }
 
             // get all of dependencies from custom nodes and additional files
             var allFilePackages =
@@ -958,7 +958,18 @@ namespace Dynamo.PackageManager
                     .Distinct()
                     .Select(x => new PackageDependency(x.Name, x.VersionName));
 
-            workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllFuncDefs);
+            workspaces = new List<CustomNodeWorkspaceModel>();
+            foreach (var def in AllFuncDefs())
+            {
+                CustomNodeWorkspaceModel ws;
+                if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
+                    def.FunctionId,
+                    DynamoModel.IsTestMode,
+                    out ws))
+                {
+                    workspaces.Add(ws);
+                }
+            }
 
             // get all of the dependencies from types
             var allTypePackages = workspaces
@@ -986,46 +997,23 @@ namespace Dynamo.PackageManager
 
         }
 
-        private List<string> GetPythonDependency()
-        {
-            var pmExtension = dynamoViewModel.Model.GetPackageManagerExtension();
-            var pkgLoader = pmExtension.PackageLoader;
-
-            var workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllDependentFuncDefs);
-
-            // get python engine from custom nodes and their dependent packages
-            var allDepPackagesPythonEngine =
-                workspaces
-                    .Select(x => x.FileName)
-                    .Union(AdditionalFiles)
-                    .Where(pkgLoader.IsUnderPackageControl)
-                    .Select(pkgLoader.GetOwnerPackage)
-                    .Where(x => x != null)
-                    .Where(x => (x.Name != Name)).Distinct()
-                    .Select(x => x.HostDependencies)
-                    .SelectMany(x => x)
-                    .Distinct();
-
-            workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllFuncDefs);
-
-            // get python engine from custom nodes that include python scripts
-            var pythonEngineDirectDep = workspaces
-                .SelectMany(x => x.Nodes)
-                .Where(x => x is PythonNode)
-                .Select(x => ((PythonNode)x).Engine)
-                .Distinct()
-                .Select(x => x.ToString());
-
-            return pythonEngineDirectDep.Union(allDepPackagesPythonEngine).ToList();
-
-        }
-
         private IEnumerable<Tuple<string, string>> GetAllNodeNameDescriptionPairs()
         {
             var pmExtension = dynamoViewModel.Model.GetPackageManagerExtension();
             var pkgLoader = pmExtension.PackageLoader;
 
-            var workspaces = GetFunctionDefinitionWS(GetFunctionDefinition.AllFuncDefs);
+            var workspaces = new List<CustomNodeWorkspaceModel>();
+            foreach (var def in AllFuncDefs())
+            {
+                CustomNodeWorkspaceModel ws;
+                if (dynamoViewModel.Model.CustomNodeManager.TryGetFunctionWorkspace(
+                    def.FunctionId,
+                    DynamoModel.IsTestMode,
+                    out ws))
+                {
+                    workspaces.Add(ws);
+                }
+            }
 
             // collect the name-description pairs for every custom node
             return
@@ -1065,7 +1053,7 @@ namespace Dynamo.PackageManager
                 Multiselect = true
             };
 
-            // if you've got the current space path, add it to shortcuts 
+            // if you've got the current space path, add it to shortcuts
             // so that user is able to easily navigate there
             var currentFileName = dynamoViewModel.Model.CurrentWorkspace.FileName;
             if (!string.IsNullOrEmpty(currentFileName))
@@ -1073,7 +1061,7 @@ namespace Dynamo.PackageManager
                 var fi = new FileInfo(currentFileName);
                 fDialog.CustomPlaces.Add(fi.DirectoryName);
             }
-            
+
             // add the definitions directory to shortcuts as well
             var pathManager = dynamoViewModel.Model.PathManager;
             if (Directory.Exists(pathManager.DefaultUserDefinitions))
@@ -1176,14 +1164,14 @@ namespace Dynamo.PackageManager
                 {
                     var assemName = assem.GetName().Name;
 
-                    // The user has attempted to load an existing dll from another path. This is not allowed 
+                    // The user has attempted to load an existing dll from another path. This is not allowed
                     // as the existing assembly cannot be modified while Dynamo is active.
                     if (this.Assemblies.Any(x => assemName == x.Assembly.GetName().Name))
                     {
-                        MessageBox.Show(string.Format(Resources.PackageDuplicateAssemblyWarning, 
+                        MessageBox.Show(string.Format(Resources.PackageDuplicateAssemblyWarning,
                                         dynamoViewModel.BrandingResourceProvider.ProductName),
-                                        Resources.PackageDuplicateAssemblyWarningTitle, 
-                                        MessageBoxButtons.OK, 
+                                        Resources.PackageDuplicateAssemblyWarningTitle,
+                                        MessageBoxButtons.OK,
                                         MessageBoxIcon.Stop);
                         return; // skip loading assembly
                     }
@@ -1198,7 +1186,7 @@ namespace Dynamo.PackageManager
                 else
                 {
                     AddAdditionalFile(filename);
-                }               
+                }
             }
             catch (Exception e)
             {
@@ -1232,36 +1220,9 @@ namespace Dynamo.PackageManager
             catch (Exception e)
             {
                 UploadState = PackageUploadHandle.State.Error;
-                ErrorString = TranslatePackageManagerError(e.Message);
+                ErrorString = e.Message;
                 dynamoViewModel.Model.Logger.Log(e);
             }
-        }
-
-        private static readonly Regex UserIsNotAMaintainerRegex =
-            new Regex("^The user sending the new package version, ([^,]+), is not a maintainer of the package (.*)$");
-        private static readonly Regex PackageAlreadyExistsRegex =
-            new Regex("^A package with the given name and engine already exists\\.$");
-
-        /// <summary>
-        /// Inspects an error message to see if it matches a known Package Manager error message. If it does,
-        /// it returns the equivalent translated resource, otherwise it returns the same message.
-        /// NOTE: This function is internal for testing purposes only.
-        /// </summary>
-        /// <param name="message">Message to inspect</param>
-        /// <returns>Translated message or same as parameter</returns>
-        internal static string TranslatePackageManagerError(string message)
-        {
-            if (UserIsNotAMaintainerRegex.IsMatch(message))
-            {
-                var match = UserIsNotAMaintainerRegex.Match(message);
-                return string.Format(Properties.Resources.PackageManagerUserIsNotAMaintainer, match.Groups[1], match.Groups[2]);
-            }
-            else if (PackageAlreadyExistsRegex.IsMatch(message))
-            {
-                return Properties.Resources.PackageManagerPackageAlreadyExists;
-            }
-
-            return message;
         }
 
         /// <summary>
@@ -1279,12 +1240,12 @@ namespace Dynamo.PackageManager
                 var unqualifiedFiles = GetAllUnqualifiedFiles();
 
                 // if the unqualified files are bigger than 0, error message is triggered.
-                // At the same time, as unqualified files existed, 
+                // At the same time, as unqualified files existed,
                 // files returned from BuildPackage() is 0.
                 // This is caused by the package file is not existed or it has already been in a package.
                 // files.Count() is also checking for the exception that was caught in BuildPackage().
                 // The scenario can be user trying to publish unsaved workspace.
-                if (files == null || files.Count() < 1 || unqualifiedFiles.Count() > 0) 
+                if (files == null || files.Count() < 1 || unqualifiedFiles.Count() > 0)
                 {
                     string filesCannotBePublished = null;
                     foreach (var file in unqualifiedFiles)
@@ -1321,7 +1282,7 @@ namespace Dynamo.PackageManager
                     DialogResult dialogResult = DynamoModel.IsTestMode ? DialogResult.No : System.Windows.Forms.MessageBox.Show(Resources.PublishPackageMessage, Resources.PublishPackageDialogCaption, MessageBoxButtons.YesNo, MessageBoxIcon.Information); ;
 
                     if (dialogResult == DialogResult.Yes)
-                    { 
+                    {
                         this.ClearAllEntries();
                         Uploading = false;
                         UploadState = PackageUploadHandle.State.Ready;
@@ -1362,22 +1323,13 @@ namespace Dynamo.PackageManager
                 Package.Keywords = KeywordList;
                 Package.License = License;
                 Package.SiteUrl = SiteUrl;
-                Package.RepositoryUrl = RepositoryUrl;                
+                Package.RepositoryUrl = RepositoryUrl;
+                Package.HostDependencies = SelectedHosts;
 
                 AppendPackageContents();
 
-                Package.Dependencies.Clear();
+                // Package.Dependencies.Clear();
                 GetAllDependencies().ToList().ForEach(Package.Dependencies.Add);
-
-                Package.HostDependencies = Enumerable.Empty<string>();
-                Package.HostDependencies = SelectedHosts;
-                foreach (var py in GetPythonDependency()) 
-                {
-                    if (!Package.HostDependencies.Contains(py)) 
-                    {
-                        Package.HostDependencies = Package.HostDependencies.Concat(new[] { py });
-                    }
-                }                                
 
                 var files = GetAllFiles().ToList();
                 var pmExtension = dynamoViewModel.Model.GetPackageManagerExtension();
@@ -1492,7 +1444,7 @@ namespace Dynamo.PackageManager
         /// Delegate used to submit the element </summary>
         private bool CanSubmit()
         {
-            // Typically, this code should never be seen as the publish package dialogs should not 
+            // Typically, this code should never be seen as the publish package dialogs should not
             // be active when there is no authenticator
             if (dynamoViewModel == null || !dynamoViewModel.Model.AuthenticationManager.HasAuthProvider)
             {

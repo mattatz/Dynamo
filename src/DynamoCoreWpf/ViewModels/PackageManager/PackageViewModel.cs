@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Dynamo.Configuration;
 using Dynamo.Graph.Workspaces;
 using Dynamo.Models;
 using Dynamo.PackageManager;
@@ -31,74 +30,6 @@ namespace Dynamo.ViewModels
             get { return Model.LoadedAssemblies.Any(x => !x.IsNodeLibrary); }
         }
 
-        public string PackageLoadStateText
-        {
-            get
-            {
-                switch (Model.LoadState.ScheduledState)
-                {
-                    case PackageLoadState.ScheduledTypes.ScheduledForLoad: return Resources.PackageStateScheduledForLoad;
-                    case PackageLoadState.ScheduledTypes.ScheduledForUnload: return Resources.PackageStateScheduledForUnload;
-                    case PackageLoadState.ScheduledTypes.ScheduledForDeletion: return Resources.PackageStateScheduledForDeletion;
-                    default:
-                        break;
-                }
-
-                switch (Model.LoadState.State)
-                {
-                    case PackageLoadState.StateTypes.Unloaded: return Resources.PackageStateUnloaded;
-                    case PackageLoadState.StateTypes.Loaded: return Resources.PackageStateLoaded;
-                    case PackageLoadState.StateTypes.Error: return Resources.PackageStateError;
-                    default:
-                        return "Unknown package state";
-                }
-            }
-        }
-
-        public string PackageLoadStateTooltip
-        {
-            get
-            {
-                switch (Model.LoadState.ScheduledState)
-                {
-                    case PackageLoadState.ScheduledTypes.ScheduledForLoad: return Resources.PackageStateScheduledForLoadTooltip;
-                    case PackageLoadState.ScheduledTypes.ScheduledForUnload: return Resources.PackageStateScheduledForUnloadTooltip;
-                    case PackageLoadState.ScheduledTypes.ScheduledForDeletion: return Resources.PackageStateScheduledForDeletionTooltip;
-                    default:
-                        break;
-                }
-
-                switch (Model.LoadState.State)
-                {
-                    case PackageLoadState.StateTypes.Unloaded: return Resources.PackageStateUnloadedTooltip;
-                    case PackageLoadState.StateTypes.Loaded: return Resources.PackageStateLoadedTooltip;
-                    case PackageLoadState.StateTypes.Error: return string.Format(Resources.PackageStateErrorTooltip, Model.LoadState.ErrorMessage);
-                    default:
-                        return "Unknown package state";
-                }
-            }
-        }
-
-        public string PackageViewContextMenuUninstallText
-        {
-            get { return Model.BuiltInPackage ? Resources.PackageContextMenuUnloadPackageText : Resources.PackageContextMenuDeletePackageText; }
-        }
-
-        public string PackageViewContextMenuUninstallTooltip
-        {
-            get { return Model.BuiltInPackage ? Resources.PackageContextMenuUnloadPackageTooltip : Resources.PackageContextMenuDeletePackageTooltip; }
-        }
-
-        public string PackageViewContextMenuUnmarkUninstallText
-        {
-            get { return Model.BuiltInPackage ? Resources.PackageContextMenuUnmarkUnloadPackageText : Resources.PackageContextMenuUnmarkDeletePackageText; }
-        }
-
-        public string PackageViewContextMenuUnmarkUninstallTooltip
-        {
-            get { return Model.BuiltInPackage ? Resources.PackageContextMenuUnmarkUnloadPackageTooltip : Resources.PackageContextMenuUnmarkDeletePackageTooltip; }
-        }
-
         public bool HasNodeLibraries
         {
             get { return Model.LoadedAssemblies.Any(x => x.IsNodeLibrary); }
@@ -114,7 +45,6 @@ namespace Dynamo.ViewModels
             get { return Model.LoadedAssemblies.Any(); }
         }
 
-        [Obsolete("Do not use. This command will be removed. It does nothing.")]
         public DelegateCommand ToggleTypesVisibleInManagerCommand { get; set; }
         public DelegateCommand GetLatestVersionCommand { get; set; }
         public DelegateCommand PublishNewPackageVersionCommand { get; set; }
@@ -132,7 +62,7 @@ namespace Dynamo.ViewModels
             this.packageManagerClient = pmExtension.PackageManagerClient;
             Model = model;
 
-            ToggleTypesVisibleInManagerCommand = new DelegateCommand(() => { }, () => true);
+            ToggleTypesVisibleInManagerCommand = new DelegateCommand(ToggleTypesVisibleInManager, CanToggleTypesVisibleInManager);
             GetLatestVersionCommand = new DelegateCommand(GetLatestVersion, CanGetLatestVersion);
             PublishNewPackageVersionCommand = new DelegateCommand(() => ExecuteWithTou(PublishNewPackageVersion), CanPublishNewPackageVersion);
             PublishNewPackageCommand = new DelegateCommand(() => ExecuteWithTou(PublishNewPackage), CanPublishNewPackage);
@@ -177,7 +107,7 @@ namespace Dynamo.ViewModels
 
         private void ModelOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            if (propertyChangedEventArgs.PropertyName == nameof(Model.LoadState.ScheduledState))
+            if (propertyChangedEventArgs.PropertyName == "MarkedForUninstall")
             {
                 UnmarkForUninstallationCommand.RaiseCanExecuteChanged();
                 UninstallCommand.RaiseCanExecuteChanged();
@@ -187,16 +117,11 @@ namespace Dynamo.ViewModels
         private void UnmarkForUninstallation()
         {
             Model.UnmarkForUninstall( dynamoViewModel.Model.PreferenceSettings );
-
-            RaisePropertyChanged(nameof(PackageLoadStateTooltip));
-            RaisePropertyChanged(nameof(PackageLoadStateText));
         }
 
         private bool CanUnmarkForUninstallation()
         {
-            return Model.BuiltInPackage ?
-                Model.LoadState.ScheduledState == PackageLoadState.ScheduledTypes.ScheduledForUnload :
-                Model.LoadState.ScheduledState == PackageLoadState.ScheduledTypes.ScheduledForDeletion;
+            return Model.MarkedForUninstall;
         }
 
         private void Uninstall()
@@ -231,23 +156,12 @@ namespace Dynamo.ViewModels
                     Resources.UninstallFailureMessageBoxTitle,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            finally
-            {
-                RaisePropertyChanged(nameof(PackageLoadStateTooltip));
-                RaisePropertyChanged(nameof(PackageLoadStateText));
-            }
         }
 
         private bool CanUninstall()
         {
-            if (!Model.InUse(dynamoViewModel.Model) || Model.LoadedAssemblies.Any())
-            {
-                return Model.BuiltInPackage ? 
-                    Model.LoadState.State != PackageLoadState.StateTypes.Unloaded &&
-                    Model.LoadState.ScheduledState != PackageLoadState.ScheduledTypes.ScheduledForUnload :
-                    Model.LoadState.ScheduledState != PackageLoadState.ScheduledTypes.ScheduledForDeletion;
-            }
-            return false;
+            return (!Model.InUse(dynamoViewModel.Model) || Model.LoadedAssemblies.Any())
+                && !Model.MarkedForUninstall;
         }
 
         private void GoToRootDirectory()
@@ -271,7 +185,7 @@ namespace Dynamo.ViewModels
         private void Deprecate()
         {
             var res = MessageBox.Show(String.Format(Resources.MessageToDeprecatePackage, this.Model.Name),
-                                      Resources.DeprecatingPackageMessageBoxTitle, 
+                                      Resources.DeprecatingPackageMessageBoxTitle,
                                       MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (res == MessageBoxResult.No) return;
 
@@ -287,7 +201,7 @@ namespace Dynamo.ViewModels
         private void Undeprecate()
         {
             var res = MessageBox.Show(String.Format(Resources.MessageToUndeprecatePackage, this.Model.Name),
-                                      Resources.UndeprecatingPackageMessageBoxTitle, 
+                                      Resources.UndeprecatingPackageMessageBoxTitle,
                                       MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (res == MessageBoxResult.No) return;
             packageManagerClient.Undeprecate(Model.Name);
@@ -325,7 +239,7 @@ namespace Dynamo.ViewModels
         private void ExecuteWithTou(Action acceptanceCallback)
         {
             var dModel = dynamoViewModel.Model;
-            // create TermsOfUseHelper object to check asynchronously whether the Terms of Use has 
+            // create TermsOfUseHelper object to check asynchronously whether the Terms of Use has
             // been accepted, and if so, continue to execute the provided Action.
             var termsOfUseCheck = new TermsOfUseHelper(new TermsOfUseHelperParams
             {
@@ -351,6 +265,16 @@ namespace Dynamo.ViewModels
         private bool CanGetLatestVersion()
         {
             return false;
+        }
+
+        private void ToggleTypesVisibleInManager()
+        {
+            Model.TypesVisibleInManager = !Model.TypesVisibleInManager;
+        }
+
+        private bool CanToggleTypesVisibleInManager()
+        {
+            return true;
         }
     }
 }
