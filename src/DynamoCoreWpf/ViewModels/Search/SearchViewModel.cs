@@ -39,7 +39,7 @@ namespace Dynamo.ViewModels
             if (SearchTextChanged != null)
                 SearchTextChanged(this, e);
 
-            if (DebugModes.IsEnabled("Disable16"))
+            if (DebugModes.IsEnabled("Simplify search"))
             {
                 SearchCommand.Execute(null);
             }

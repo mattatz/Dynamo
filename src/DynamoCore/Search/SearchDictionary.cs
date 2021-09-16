@@ -291,7 +291,7 @@ namespace Dynamo.Search
                 //for each word
                 foreach (var subPattern in subPatterns)
                 {
-                    if (DebugModes.IsEnabled("Disable16"))
+                    if (DebugModes.IsEnabled("Simplify search"))
                     {
                         if (indexOf(key, subPattern) != -1)
                         {   //if we find a match record the amount of the match and goto the next word
@@ -409,7 +409,7 @@ namespace Dynamo.Search
                 subPatterns = SplitOnWhiteSpace(query);
             }
 
-            if (DebugModes.IsEnabled("Disable16"))
+            if (DebugModes.IsEnabled("Simplify search"))
             {
                 // Add full (unsplit by whitespace) query to subpatterns
                 if (subPatterns.Length > 1)

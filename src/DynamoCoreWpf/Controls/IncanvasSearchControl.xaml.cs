@@ -61,7 +61,7 @@ namespace Dynamo.UI.Controls
 
         private void OnSearchTextBoxTextChanged(object sender, EventArgs e)
         {
-            if (DebugModes.IsEnabled("Disable16"))
+            if (DebugModes.IsEnabled("Simplify search"))
             {
                 // nothing
             }
