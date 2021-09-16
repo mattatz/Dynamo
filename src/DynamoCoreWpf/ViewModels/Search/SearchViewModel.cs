@@ -38,6 +38,11 @@ namespace Dynamo.ViewModels
         {
             if (SearchTextChanged != null)
                 SearchTextChanged(this, e);
+
+            if (DebugModes.IsEnabled("Disable16"))
+            {
+                SearchCommand.Execute(null);
+            }
         }
 
         #endregion

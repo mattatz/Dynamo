@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Dynamo.Configuration;
 using Dynamo.Utilities;
 using Dynamo.ViewModels;
 using Dynamo.Wpf.ViewModels;
@@ -35,7 +36,6 @@ namespace Dynamo.UI.Controls
                 Application.Current.Deactivated += currentApplicationDeactivated;
             }
             Unloaded += InCanvasSearchControl_Unloaded; ;
-
         }
 
         private void InCanvasSearchControl_Unloaded(object sender, RoutedEventArgs e)
@@ -59,14 +59,21 @@ namespace Dynamo.UI.Controls
             }
         }
 
-        private void OnSearchTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        private void OnSearchTextBoxTextChanged(object sender, EventArgs e)
         {
-            BindingExpression binding = ((TextBox)sender).GetBindingExpression(TextBox.TextProperty);
-            if (binding != null)
-                binding.UpdateSource();
+            if (DebugModes.IsEnabled("Disable16"))
+            {
+                // nothing
+            }
+            else
+            {
+                BindingExpression binding = ((TextBox)sender).GetBindingExpression(TextBox.TextProperty);
+                if (binding != null)
+                    binding.UpdateSource();
 
-            if (ViewModel != null)
-                ViewModel.SearchCommand.Execute(null);
+                if (ViewModel != null)
+                    ViewModel.SearchCommand.Execute(null);
+            }
         }
 
         private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)

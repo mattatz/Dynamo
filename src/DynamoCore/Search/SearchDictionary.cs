@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using Dynamo.Configuration;
+using System.IO;
 
 namespace Dynamo.Search
 {
@@ -27,7 +28,7 @@ namespace Dynamo.Search
         protected readonly Dictionary<V, Dictionary<string, double>> entryDictionary =
             new Dictionary<V, Dictionary<string, double>>();
 
-        private List<IGrouping<string, Tuple<V, double>>> tagDictionary;
+        private static List<IGrouping<string, Tuple<V, double>>> tagDictionary;
 
         /// <summary>
         ///     All the current entries in search.
@@ -249,6 +250,21 @@ namespace Dynamo.Search
             return entryDictionary.Keys.Any(x => Equals(x, a));
         }
 
+        static int counter = 0;
+        static int maxTagLength = 0;
+        static ulong totalTagLength = 0;
+
+        public static int indexOf(string original, string substring)
+        {
+            if (maxTagLength < original.Length)
+            {
+                maxTagLength = original.Length;
+            }
+            totalTagLength += (ulong)original.Length;
+            counter++;
+            return original.IndexOf(substring, 0, original.Length > 30 ? 30 : original.Length, StringComparison.Ordinal);
+        }
+
         #region Manual Searching
 
         /// <summary>
@@ -274,14 +290,26 @@ namespace Dynamo.Search
                 int numberOfAllSymbols = 0;
                 //for each word
                 foreach (var subPattern in subPatterns)
-                { //for each continuous substring in the word starting with the full word
-                    for (int i = subPattern.Length; i >= 1; i--)
+                {
+                    if (DebugModes.IsEnabled("Disable16"))
                     {
-                        var part = subPattern.Substring(0, i);
-                        if (key.IndexOf(part) != -1)
+                        if (indexOf(key, subPattern) != -1)
                         {   //if we find a match record the amount of the match and goto the next word
-                            numberOfMatchSymbols += part.Length;
-                            break;
+                            numberOfMatchSymbols += subPattern.Length;
+                        }
+                    }
+                    else
+                    {
+                        //for each continuous substring in the word starting with the full word
+                        for (int i = subPattern.Length; i >= 1; i--)
+                        {
+                            var part = subPattern.Substring(0, i);
+                            counter++;
+                            if (key.IndexOf(part) != -1)
+                            {   //if we find a match record the amount of the match and goto the next word
+                                numberOfMatchSymbols += part.Length;
+                                break;
+                            }
                         }
                     }
                     numberOfAllSymbols += subPattern.Length;
@@ -302,6 +330,15 @@ namespace Dynamo.Search
                 || element.Contains("\\");
         }
         #endregion
+
+        internal static void DumpTags()
+        {
+            if (tagDictionary != null)
+            {
+                var alltags = tagDictionary.Select(x => x.Key).ToArray();
+                File.WriteAllLines(Path.Combine(Directory.GetCurrentDirectory(), "SearchTags " + DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss-fff") + ".log"), alltags);
+            }
+        }
 
         /// <summary>
         /// Converts entryDictionary from a dictionary of searchElement:(tag,weight)
@@ -344,6 +381,9 @@ namespace Dynamo.Search
 #endif
 
             var searchDict = new Dictionary<V, double>();
+            counter = 0;
+            totalTagLength = 0;
+            maxTagLength = 0;
 
             if (DebugModes.IsEnabled("Disable11"))
             {
@@ -368,11 +408,24 @@ namespace Dynamo.Search
             {
                 subPatterns = SplitOnWhiteSpace(query);
             }
-  
-            // Add full (unsplit by whitespace) query to subpatterns
-            var subPatternsList = subPatterns.ToList();
-            subPatternsList.Insert(0, query);
-            subPatterns = (subPatternsList).ToArray();
+
+            if (DebugModes.IsEnabled("Disable16"))
+            {
+                // Add full (unsplit by whitespace) query to subpatterns
+                if (subPatterns.Length > 1)
+                {
+                    var subPatternsList = subPatterns.ToList();
+                    subPatternsList.Insert(0, query);
+                    subPatterns = (subPatternsList).ToArray();
+                }
+            } 
+            else
+            {
+                // Add full (unsplit by whitespace) query to subpatterns
+                var subPatternsList = subPatterns.ToList();
+                subPatternsList.Insert(0, query);
+                subPatterns = (subPatternsList).ToArray();
+            }
 
             foreach (var pair in tagDictionary.Where(x => MatchWithQueryString(x.Key, subPatterns)))
             {
@@ -387,11 +440,12 @@ namespace Dynamo.Search
             searchResults = searchResults.Take(20);
 
             this.logger.Log(string.Format(
-                "Searching for: \"{0}\", [Entries:{1}, Tags:{2}] : SearchResults {3}",
+                "Searching for: \"{0}\", [Entries:{1}, Tags:{2}] : SearchResults {3}, String.IndexOf counter : {4}",
                     query,
                     entryDictionary.Count,
                     tagDictionary.Count,
-                    searchResults.Count()));
+                    searchResults.Count(),
+                    counter));
 
 #if DEBUG
             if (this.logger != null)

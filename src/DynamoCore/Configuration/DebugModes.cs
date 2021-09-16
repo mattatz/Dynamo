@@ -47,21 +47,7 @@ namespace Dynamo.Configuration
         private static void RegisterDebugModes()
         {
             // Register app wide new debug modes here.
-            AddDebugMode("Disable1", "Disables SearchAndUpdateResults - Searching for nodes should be completely disabled", false);
-            AddDebugMode("Disable2", "Disables LogPiiInfo - No calls to logger", false);
-            AddDebugMode("Disable3", "Disables UpdateSearchCategories - No calls to update search categories", false);
-            AddDebugMode("Disable4", "Disables SearchViewModelRequestBitmapSource - Completely disable icons", false);
-            AddDebugMode("Disable5", "Disables LoadIconInternal - Disable loading the icons from the resource assembly", false);
-            AddDebugMode("Disable6", "Disables ConvertToImageSource - Disable conversion from bitmap to imagesource", false);
-            AddDebugMode("Disable7", "Disables WPF listbox - No search results should be rendered in wpf", false);
-            AddDebugMode("Disable8", "Disables MakeNodeSearchElementVM", false);
-            AddDebugMode("Disable9", "Disables LoadFonts", false);
-            AddDebugMode("Disable10", "Disables NodeSearchElementViewModel events", false);
-            AddDebugMode("Disable11", "Disables RebuildTagDictionary", false);
-            AddDebugMode("Disable12", "Disables SplitOnWhiteSpace", false);
-            AddDebugMode("Disable13", "Disables ComputeWeightAndAddToDictionary", false);
-            AddDebugMode("Disable14", "Disables MatchWithQueryString", false);
-            AddDebugMode("Disable15", "Hardcodes search results to the first node in the library", false);
+            AddDebugMode("Simplify search", "Simplify search", false);
         }
 
         internal static void LoadDebugModesStatusFromConfig(string configPath)

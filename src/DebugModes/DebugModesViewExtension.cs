@@ -54,6 +54,7 @@ namespace Dynamo.DebugModes
         }
 
         private MenuItem debugModesMenuItem;
+        private MenuItem dumpSearchTagsMenuItem;
         private DebugModesWindow debugModesWindow;
 
         public void Loaded(ViewLoadedParams viewLoadedParams)
@@ -69,6 +70,13 @@ namespace Dynamo.DebugModes
                 viewLoadedParams.AddToExtensionsSideBar(this, debugModesWindow);
             };
             viewLoadedParams.AddMenuItem(MenuBarType.View, debugModesMenuItem);
+
+            dumpSearchTagsMenuItem = new MenuItem { Header = "Dump Search Tags" };
+            dumpSearchTagsMenuItem.Click += (sender, args) =>
+            {
+                Search.NodeSearchModel.DumpTags();
+            };
+            viewLoadedParams.AddMenuItem(MenuBarType.View, dumpSearchTagsMenuItem);
         }
     }
 }
