@@ -1,5 +1,8 @@
 ﻿using Dynamo.Extensions;
 using Dynamo.Wpf.Extensions;
+using Microsoft.Win32;
+using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -74,7 +77,16 @@ namespace Dynamo.DebugModes
             dumpSearchTagsMenuItem = new MenuItem { Header = "Dump Search Tags" };
             dumpSearchTagsMenuItem.Click += (sender, args) =>
             {
-                Search.NodeSearchModel.DumpTags();
+                var alltags = Search.NodeSearchModel.DumpTags();
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Title = "Save log";
+                saveFileDialog.Filter = "Log|*.log";
+                saveFileDialog.ShowDialog();
+                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
+                {
+                    File.WriteAllLines(saveFileDialog.FileName, alltags);
+                }
             };
             viewLoadedParams.AddMenuItem(MenuBarType.View, dumpSearchTagsMenuItem);
         }

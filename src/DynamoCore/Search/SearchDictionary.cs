@@ -331,13 +331,9 @@ namespace Dynamo.Search
         }
         #endregion
 
-        internal static void DumpTags()
+        internal static string[] DumpTags()
         {
-            if (tagDictionary != null)
-            {
-                var alltags = tagDictionary.Select(x => x.Key).ToArray();
-                File.WriteAllLines(Path.Combine(Directory.GetCurrentDirectory(), "SearchTags " + DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss-fff") + ".log"), alltags);
-            }
+            return tagDictionary != null ? tagDictionary.Select(x => x.Key).ToArray() : null;
         }
 
         /// <summary>
