@@ -435,13 +435,16 @@ namespace Dynamo.Search
             // return only the top 20 search results
             searchResults = searchResults.Take(20);
 
-            this.logger.Log(string.Format(
+            if (this.logger != null)
+            {
+                this.logger.Log(string.Format(
                 "Searching for: \"{0}\", [Entries:{1}, Tags:{2}] : SearchResults {3}, String.IndexOf counter : {4}",
                     query,
                     entryDictionary.Count,
                     tagDictionary.Count,
                     searchResults.Count(),
                     counter));
+            }
 
 #if DEBUG
             if (this.logger != null)
