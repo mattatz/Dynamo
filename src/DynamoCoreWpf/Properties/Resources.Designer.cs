@@ -4252,6 +4252,15 @@ namespace Dynamo.Wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Renamed from {0}.
+        /// </summary>
+        public static string NodeTooltipRenamed {
+            get {
+                return ResourceManager.GetString("NodeTooltipRenamed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was an error while finding node view customizations for {0}. Contact the author of this assembly for more information..
         /// </summary>
         public static string NodeViewCustomizationFindErrorMessage {
@@ -6328,6 +6337,15 @@ namespace Dynamo.Wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File Path.
+        /// </summary>
+        public static string PublishPackageViewFilePath {
+            get {
+                return ResourceManager.GetString("PublishPackageViewFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to License (optional).
         /// </summary>
         public static string PublishPackageViewLicense {
@@ -6369,6 +6387,15 @@ namespace Dynamo.Wpf.Properties {
         public static string PublishPackageViewMarkdownFilesDirectoryToolTip {
             get {
                 return ResourceManager.GetString("PublishPackageViewMarkdownFilesDirectoryToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Node Library.
+        /// </summary>
+        public static string PublishPackageViewNodeLibrary {
+            get {
+                return ResourceManager.GetString("PublishPackageViewNodeLibrary", resourceCulture);
             }
         }
         
@@ -7660,6 +7687,15 @@ namespace Dynamo.Wpf.Properties {
         public static string WorkspaceTabSavingUnnecessary {
             get {
                 return ResourceManager.GetString("WorkspaceTabSavingUnnecessary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsaved.
+        /// </summary>
+        public static string WorkspaceTabTooltipHeaderUnsaved {
+            get {
+                return ResourceManager.GetString("WorkspaceTabTooltipHeaderUnsaved", resourceCulture);
             }
         }
         
