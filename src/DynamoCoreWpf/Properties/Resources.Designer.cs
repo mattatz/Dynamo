@@ -3872,7 +3872,7 @@ namespace Dynamo.Wpf.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The same version of {0} is already installed as a built-in package and need not be installed again..
+        ///   Looks up a localized string similar to The same version of {0} is already installed as a built-in package and does not need to be installed again..
         /// </summary>
         public static string MessageSamePackageSameVersInBuiltinPackages {
             get {
@@ -5324,6 +5324,15 @@ namespace Dynamo.Wpf.Properties {
         public static string PackagesGuideSearchResultsText {
             get {
                 return ResourceManager.GetString("PackagesGuideSearchResultsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search results.
+        /// </summary>
+        public static string PackagesGuideSearchResultsTitle {
+            get {
+                return ResourceManager.GetString("PackagesGuideSearchResultsTitle", resourceCulture);
             }
         }
         
@@ -7102,15 +7111,6 @@ namespace Dynamo.Wpf.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open all.
-        /// </summary>
-        public static string StartPageOpenAll {
-            get {
-                return ResourceManager.GetString("StartPageOpenAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Open.
         /// </summary>
         public static string StartPageOpenFile {
@@ -7260,6 +7260,15 @@ namespace Dynamo.Wpf.Properties {
         public static string TooltipCurrentIndex {
             get {
                 return ResourceManager.GetString("TooltipCurrentIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to of.
+        /// </summary>
+        public static string TourLabelProgressText {
+            get {
+                return ResourceManager.GetString("TourLabelProgressText", resourceCulture);
             }
         }
         

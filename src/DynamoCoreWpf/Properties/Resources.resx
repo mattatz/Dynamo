@@ -787,9 +787,6 @@
   <data name="StartPageBackupLocation" xml:space="preserve">
     <value>Backup location</value>
   </data>
-  <data name="StartPageOpenAll" xml:space="preserve">
-    <value>Open all</value>
-  </data>
   <data name="StartPageDiscussionForum" xml:space="preserve">
     <value>Discussion forum</value>
   </data>
@@ -2565,7 +2562,7 @@ Do you wish to continue trying to install {0}?</value>
 You can try disabling loading packages from built-in package paths, or unload the conflicting package, then restart {2} and download {0} again.</value>
   </data>
   <data name="MessageSamePackageSameVersInBuiltinPackages" xml:space="preserve">
-    <value>The same version of {0} is already installed as a built-in package and need not be installed again.</value>
+    <value>The same version of {0} is already installed as a built-in package and does not need to be installed again.</value>
   </data>
   <data name="MessageSamePackageSameVersInLocalPackages" xml:space="preserve">
     <value>The same version of {0} is already installed and does not need to be installed again.</value>
@@ -3008,6 +3005,12 @@ To install the latest version of a package, click Install. \n
   </data>
   <data name="WorkspaceTabTooltipHeaderUnsaved" xml:space="preserve">
     <value>Unsaved</value>
+  </data>
+  <data name="TourLabelProgressText" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="PackagesGuideSearchResultsTitle" xml:space="preserve">
+    <value>Search results</value>
   </data>
   <data name="StartTourButtonText" xml:space="preserve">
     <value>Start Tour</value>
