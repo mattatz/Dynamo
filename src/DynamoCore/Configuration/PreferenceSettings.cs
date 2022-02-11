@@ -447,6 +447,12 @@ namespace Dynamo.Configuration
         /// </summary>
         public bool ShowRunPreview { get; set; }
 
+
+        /// <summary>
+        /// Stores the group styles added in the preference settings
+        /// </summary>
+        public List<GroupStyleItem> GroupStyleItemsList { get; set; }
+
         /// <summary>
         /// Limits the size of the tags used by the SearchDictionary
         /// This static property is not serialized and is assigned NodeSearchTagSizeLimit's value 
@@ -468,7 +474,7 @@ namespace Dynamo.Configuration
         /// This static property is not serialized and is assigned IronPythonResolveTargetVersion's value 
         /// if found at deserialize time.
         /// </summary>
-        internal static Version IronPythonResolveVersion = new Version(2, 1, 0);
+        internal static Version IronPythonResolveVersion = new Version(2, 4, 0);
 
         /// <summary>
         /// The Version of the IronPython package that Dynamo will download when it is found as missing in graphs.
@@ -526,7 +532,7 @@ namespace Dynamo.Configuration
             EnableNodeAutoComplete = true;
             DefaultPythonEngine = string.Empty;
             ViewExtensionSettings = new List<ViewExtensionSettings>();
-
+            GroupStyleItemsList = new List<GroupStyleItem>();
         }
 
         /// <summary>
@@ -599,7 +605,6 @@ namespace Dynamo.Configuration
                 }
             }
             catch (Exception) { }
-
             settings.CustomPackageFolders = settings.CustomPackageFolders.Distinct().ToList();
             MigrateStdLibTokenToBuiltInToken(settings);
 

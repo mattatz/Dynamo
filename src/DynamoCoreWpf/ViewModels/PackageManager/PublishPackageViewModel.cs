@@ -1124,9 +1124,8 @@ namespace Dynamo.PackageManager
             var pythonEngineDirectDep = workspaces
                 .SelectMany(x => x.Nodes)
                 .Where(x => x is PythonNode)
-                .Select(x => ((PythonNode)x).Engine)
-                .Distinct()
-                .Select(x => x.ToString());
+                .Select(x => ((PythonNode)x).EngineName)
+                .Distinct();
 
             return pythonEngineDirectDep.Union(allDepPackagesPythonEngine).ToList();
 
@@ -1661,11 +1660,8 @@ namespace Dynamo.PackageManager
             {
                 ErrorString = String.Format(Resources.FolderNotWritableError, folder);
                 var ErrorMessage = ErrorString + "\n" + Resources.SolutionToFolderNotWritatbleError;
-                DialogResult response = DynamoModel.IsTestMode ? DialogResult.OK : System.Windows.Forms.MessageBox.Show(ErrorMessage, Resources.FileNotPublishCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                if (response == DialogResult.OK)
-                {
-                    return string.Empty;
-                }
+                Dynamo.Wpf.Utilities.MessageBoxService.Show(ErrorMessage, Resources.FileNotPublishCaption, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return string.Empty;
             }
 
             var pkgSubFolder = Path.Combine(folder, PathManager.PackagesDirectoryName);

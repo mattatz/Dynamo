@@ -374,7 +374,7 @@ namespace Dynamo.PackageManager
             // In earlier packages, this field could be null, which is correctly handled by IsNodeLibrary
             var nodeLibraries = Header.node_libraries;
             
-            foreach (var assemFile in (new System.IO.DirectoryInfo(BinaryDirectory)).EnumerateFiles("*.dll"))
+            foreach (var assemFile in new DirectoryInfo(BinaryDirectory).EnumerateFiles("*.dll"))
             {
                 Assembly assem;
                 //TODO when can we make this false. 3.0?
@@ -489,10 +489,12 @@ namespace Dynamo.PackageManager
             return Directory.EnumerateFiles(RootDirectory, "*", SearchOption.AllDirectories).Any(s => s == path);
         }
 
+        // Checks if the package is used in the Dynamo model.
+        // The check does not take into account the package load state.
         internal bool InUse(DynamoModel dynamoModel)
         {
             return (LoadedAssemblies.Any() || IsWorkspaceFromPackageOpen(dynamoModel) || 
-                IsCustomNodeFromPackageInUse(dynamoModel)) && LoadState.State == PackageLoadState.StateTypes.Loaded;
+                IsCustomNodeFromPackageInUse(dynamoModel));
         }
 
         private bool IsCustomNodeFromPackageInUse(DynamoModel dynamoModel)

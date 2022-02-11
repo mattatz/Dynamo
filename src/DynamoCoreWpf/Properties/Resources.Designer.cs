@@ -799,6 +799,15 @@ namespace Dynamo.Wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unpin from node.
+        /// </summary>
+        public static string ContextUnpinFromNode {
+            get {
+                return ResourceManager.GetString("ContextUnpinFromNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Continue.
         /// </summary>
         public static string ContinueButton {
@@ -5254,6 +5263,15 @@ namespace Dynamo.Wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Install a package.
+        /// </summary>
+        public static string PackagesGuideInstallAPackageTitle {
+            get {
+                return ResourceManager.GetString("PackagesGuideInstallAPackageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package installations are typically quick, depending on their size and other factors. \n
         ///To install the latest version of a package, click Install. \n
         ///%./UI/Images/alert.png% The sample Autodesk package is already installed on your computer..
@@ -5933,6 +5951,15 @@ namespace Dynamo.Wpf.Properties {
         public static string PreferencesViewVisualSettingsGeoScaling {
             get {
                 return ResourceManager.GetString("PreferencesViewVisualSettingsGeoScaling", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group Name.
+        /// </summary>
+        public static string PreferencesViewVisualSettingsGroupStyleInput {
+            get {
+                return ResourceManager.GetString("PreferencesViewVisualSettingsGroupStyleInput", resourceCulture);
             }
         }
         
@@ -7548,6 +7575,15 @@ namespace Dynamo.Wpf.Properties {
         public static string UnloadFailureMessageBoxTitle {
             get {
                 return ResourceManager.GetString("UnloadFailureMessageBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin this note from the node.
+        /// </summary>
+        public static string UnpinNodeTooltip {
+            get {
+                return ResourceManager.GetString("UnpinNodeTooltip", resourceCulture);
             }
         }
         
