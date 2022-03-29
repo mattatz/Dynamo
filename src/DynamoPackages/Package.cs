@@ -529,6 +529,7 @@ namespace Dynamo.PackageManager
         {
             if (BuiltInPackage) 
             {
+                Analytics.TrackEvent(Actions.BuiltInPackageConflict, Categories.PackageManagerOperations, $"{Name } {versionName} marked to be unloaded");
                 LoadState.SetScheduledForUnload();
             } 
             else
@@ -600,6 +601,8 @@ namespace Dynamo.PackageManager
                 if (BuiltInPackage)
                 {
                     LoadState.SetAsUnloaded();
+                    Analytics.TrackEvent(Actions.BuiltInPackageConflict, Categories.PackageManagerOperations, $"{Name } {versionName} set unloaded");
+
                     RaisePropertyChanged(nameof(LoadState));
 
                     if (!prefs.PackageDirectoriesToUninstall.Contains(RootDirectory))
