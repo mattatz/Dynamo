@@ -7,6 +7,7 @@ using System.Threading;
 using System.Xml;
 using DesignScript.Builtin;
 using Dynamo.Applications;
+using Dynamo.Graph.Nodes;
 using Dynamo.Graph.Workspaces;
 using Dynamo.Models;
 
@@ -157,10 +158,13 @@ namespace DynamoCLI
             return value.ToString();
         }
 
-        private static void populateXmlDocWithResults(XmlDocument doc, List<Dictionary<Guid, List<object>>> resultsDict)
+        private static void populateXmlDocWithResults(XmlDocument doc, List<Dictionary<Guid, List<object>>> resultsDict, List<Dictionary<Guid, List<Info>>> infoDict)
         {
+            var root = doc.CreateElement("result");
+            doc.AppendChild(root);
+
             var evalele = doc.CreateElement("evaluations");
-            doc.AppendChild(evalele);
+            root.AppendChild(evalele);
             foreach (var evaluation in resultsDict)
             {
                 var index = resultsDict.IndexOf(evaluation);
@@ -182,19 +186,48 @@ namespace DynamoCLI
                         nodeval.AppendChild(portelement);
                     }
                 }
-
             }
+
+            var info = doc.CreateElement("infos");
+            root.AppendChild(info);
+            foreach (var i in infoDict)
+            {
+                var index = infoDict.IndexOf(i);
+
+                var currentinfo = doc.CreateElement("info" + index.ToString());
+                info.AppendChild(currentinfo);
+                //foreach node:results pair in this eval
+                foreach (KeyValuePair<Guid, List<Info>> entry in infoDict[index])
+                {
+                    var nodeval = doc.CreateElement("Node");
+                    nodeval.SetAttribute("guid", entry.Key.ToString());
+                    currentinfo.AppendChild(nodeval);
+
+                    foreach (var value in entry.Value)
+                    {
+                        var portindex = entry.Value.IndexOf(value);
+                        var portelement = doc.CreateElement("info" + portindex.ToString());
+                        portelement.SetAttribute("state", value.State.ToString());
+                        portelement.SetAttribute("message", value.Message.ToString());
+                        nodeval.AppendChild(portelement);
+                    }
+                }
+            }
+
         }
 
         protected static XmlDocument CreateXMLDoc(DynamoModel model)
         {
             var outputresults = new List<Dictionary<Guid, List<object>>>();
+            var outputinfos = new List<Dictionary<Guid, List<Info>>>();
             XmlDocument doc = new XmlDocument();
             var resultsdict = new Dictionary<Guid, List<object>>();
+            var infodict = new Dictionary<Guid, List<Info>>();
 
             foreach (var node in model.CurrentWorkspace.Nodes)
             {
                 var portvalues = new List<object>();
+                var infovalues = new List<Info>();
                 foreach (var port in node.OutPorts)
                 {
                     var value = node.GetValue(port.Index, model.EngineController);
@@ -212,10 +245,17 @@ namespace DynamoCLI
                     }
                 }
 
+                foreach (var info in node.Infos)
+                {
+                    infovalues.Add(info);
+                }
+
                 resultsdict.Add(node.GUID, portvalues);
+                infodict.Add(node.GUID, infovalues);
             }
             outputresults.Add(resultsdict);
-            populateXmlDocWithResults(doc, outputresults);
+            outputinfos.Add(infodict);
+            populateXmlDocWithResults(doc, outputresults, outputinfos);
 
             return doc;
         }

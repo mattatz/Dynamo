@@ -29,7 +29,7 @@ using StringNode = ProtoCore.AST.AssociativeAST.StringNode;
 
 namespace Dynamo.Graph.Nodes
 {
-    internal class Info
+    public class Info
     {
         public string Message;
         public Nodes.ElementState State;
@@ -425,7 +425,7 @@ namespace Dynamo.Graph.Nodes
         /// <summary>
         /// Collection of warnings, errors and info items applied to the NodeModel.
         /// </summary>
-        internal ObservableHashSet<Info> Infos
+        public ObservableHashSet<Info> Infos
         {
             get { return infos; }
         }

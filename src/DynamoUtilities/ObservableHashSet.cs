@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Dynamo.Utilities
 {
-    internal class ObservableHashSet<T> : INotifyCollectionChanged
+    public class ObservableHashSet<T> : INotifyCollectionChanged
     {
         private readonly HashSet<T> set = new HashSet<T>();
 
